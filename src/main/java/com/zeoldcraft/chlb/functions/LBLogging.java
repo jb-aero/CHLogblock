@@ -1,7 +1,6 @@
 package com.zeoldcraft.chlb.functions;
 
 import com.laytonsmith.abstraction.MCLocation;
-import com.laytonsmith.abstraction.MCPlayer;
 import com.laytonsmith.abstraction.blocks.MCSign;
 import com.laytonsmith.abstraction.bukkit.BukkitMCLocation;
 import com.laytonsmith.annotations.api;
@@ -55,17 +54,17 @@ public class LBLogging {
 		public Construct exec(Target t, Environment environment,
 				Construct... args) throws ConfigRuntimeException {
 			Static.checkPlugin("LogBlock", t);
-			MCPlayer p = Static.GetPlayer(args[0], t);
-			MCLocation loc = ObjectGenerator.GetGenerator().location(args[1], p.getWorld(), t);
+			String p = args[0].val();
+			MCLocation loc = ObjectGenerator.GetGenerator().location(args[1], null, t);
 			int typeBefore = loc.getBlock().getTypeId();
 			byte dataBefore = loc.getBlock().getData();
-			if (args.length == 3) {
+			if (args.length >= 3) {
 				typeBefore = Static.getInt32(args[2], t);
 			}
 			if (args.length == 4) {
 				dataBefore = Static.getInt8(args[3], t);
 			}
-			getConsumer(t).queueBlockBreak(p.getName(), ((BukkitMCLocation) loc).asLocation(), typeBefore, dataBefore);
+			getConsumer(t).queueBlockBreak(p, ((BukkitMCLocation) loc).asLocation(), typeBefore, dataBefore);
 			return new CVoid(t);
 		}
 
@@ -106,8 +105,8 @@ public class LBLogging {
 		public Construct exec(Target t, Environment environment,
 				Construct... args) throws ConfigRuntimeException {
 			Static.checkPlugin("LogBlock", t);
-			MCPlayer p = Static.GetPlayer(args[0], t);
-			MCLocation loc = ObjectGenerator.GetGenerator().location(args[1], p.getWorld(), t);
+			String p = args[0].val();
+			MCLocation loc = ObjectGenerator.GetGenerator().location(args[1], null, t);
 			int type = loc.getBlock().getTypeId();
 			byte data = loc.getBlock().getData();
 			String[] lines = new String[]{"", "", "", ""};
@@ -117,7 +116,7 @@ public class LBLogging {
 					lines[i] = s.getLine(i);
 				}
 			}
-			if (args.length == 3) {
+			if (args.length >= 3) {
 				if (args[2] instanceof CArray) {
 					for (int i=0;i<4;i++) {
 						lines[i] = ((CArray) args[2]).get(i).val();
@@ -126,7 +125,7 @@ public class LBLogging {
 					throw new Exceptions.FormatException("Expected an array of lines on the sign", t);
 				}
 			}
-			if (args.length == 4) {
+			if (args.length >= 4) {
 				type = Static.getInt32(args[3], t);
 			}
 			if (type != 63 && type != 68) {
@@ -135,7 +134,7 @@ public class LBLogging {
 			if (args.length == 5) {
 				data = Static.getInt8(args[4], t);
 			}
-			getConsumer(t).queueSignBreak(p.getName(), ((BukkitMCLocation) loc).asLocation(), type, data, lines);
+			getConsumer(t).queueSignBreak(p, ((BukkitMCLocation) loc).asLocation(), type, data, lines);
 			return new CVoid(t);
 		}
 
@@ -177,17 +176,17 @@ public class LBLogging {
 		public Construct exec(Target t, Environment environment,
 				Construct... args) throws ConfigRuntimeException {
 			Static.checkPlugin("LogBlock", t);
-			MCPlayer p = Static.GetPlayer(args[0], t);
-			MCLocation loc = ObjectGenerator.GetGenerator().location(args[1], p.getWorld(), t);
+			String p = args[0].val();
+			MCLocation loc = ObjectGenerator.GetGenerator().location(args[1], null, t);
 			int type = loc.getBlock().getTypeId();
 			byte data = loc.getBlock().getData();
-			if (args.length == 3) {
+			if (args.length >= 3) {
 				type = Static.getInt32(args[2], t);
 			}
 			if (args.length == 4) {
 				data = Static.getInt8(args[3], t);
 			}
-			getConsumer(t).queueBlockPlace(p.getName(), ((BukkitMCLocation) loc).asLocation(), type, data);
+			getConsumer(t).queueBlockPlace(p, ((BukkitMCLocation) loc).asLocation(), type, data);
 			return new CVoid(t);
 		}
 
@@ -228,8 +227,8 @@ public class LBLogging {
 		public Construct exec(Target t, Environment environment,
 				Construct... args) throws ConfigRuntimeException {
 			Static.checkPlugin("LogBlock", t);
-			MCPlayer p = Static.GetPlayer(args[0], t);
-			MCLocation loc = ObjectGenerator.GetGenerator().location(args[1], p.getWorld(), t);
+			String p = args[0].val();
+			MCLocation loc = ObjectGenerator.GetGenerator().location(args[1], null, t);
 			int type = loc.getBlock().getTypeId();
 			byte data = loc.getBlock().getData();
 			String[] lines = new String[]{"", "", "", ""};
@@ -239,7 +238,7 @@ public class LBLogging {
 					lines[i] = s.getLine(i);
 				}
 			}
-			if (args.length == 3) {
+			if (args.length >= 3) {
 				if (args[2] instanceof CArray) {
 					for (int i=0;i<4;i++) {
 						lines[i] = ((CArray) args[2]).get(i).val();
@@ -248,7 +247,7 @@ public class LBLogging {
 					throw new Exceptions.FormatException("Expected an array of lines on the sign", t);
 				}
 			}
-			if (args.length == 4) {
+			if (args.length >= 4) {
 				type = Static.getInt32(args[3], t);
 			}
 			if (type != 63 && type != 68) {
@@ -257,7 +256,7 @@ public class LBLogging {
 			if (args.length == 5) {
 				data = Static.getInt8(args[4], t);
 			}
-			getConsumer(t).queueSignPlace(p.getName(), ((BukkitMCLocation) loc).asLocation(), type, data, lines);
+			getConsumer(t).queueSignPlace(p, ((BukkitMCLocation) loc).asLocation(), type, data, lines);
 			return new CVoid(t);
 		}
 

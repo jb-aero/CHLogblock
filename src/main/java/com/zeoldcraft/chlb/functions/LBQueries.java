@@ -47,7 +47,7 @@ public class LBQueries {
 
 		public ExceptionType[] thrown() {
 			return new ExceptionType[]{ExceptionType.IOException, ExceptionType.PlayerOfflineException,
-					ExceptionType.FormatException};
+					ExceptionType.FormatException, ExceptionType.InvalidPluginException};
 		}
 
 		public boolean isRestricted() {
