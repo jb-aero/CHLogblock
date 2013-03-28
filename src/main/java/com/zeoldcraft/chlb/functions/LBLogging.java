@@ -87,6 +87,7 @@ public class LBLogging {
 		
 	}
 	
+	@api
 	public static class lb_log_break_sign extends AbstractFunction {
 		
 		public ExceptionType[] thrown() {
@@ -209,6 +210,7 @@ public class LBLogging {
 		
 	}
 	
+	@api
 	public static class lb_log_place_sign extends AbstractFunction {
 		
 		public ExceptionType[] thrown() {
