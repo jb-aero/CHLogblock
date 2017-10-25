@@ -12,10 +12,14 @@ import com.laytonsmith.core.constructs.CVoid;
 import com.laytonsmith.core.constructs.Construct;
 import com.laytonsmith.core.constructs.Target;
 import com.laytonsmith.core.environments.Environment;
+import com.laytonsmith.core.exceptions.CRE.CRECastException;
+import com.laytonsmith.core.exceptions.CRE.CREFormatException;
+import com.laytonsmith.core.exceptions.CRE.CREInvalidPluginException;
+import com.laytonsmith.core.exceptions.CRE.CREPlayerOfflineException;
+import com.laytonsmith.core.exceptions.CRE.CRERangeException;
+import com.laytonsmith.core.exceptions.CRE.CREThrowable;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
 import com.laytonsmith.core.functions.AbstractFunction;
-import com.laytonsmith.core.functions.Exceptions;
-import com.laytonsmith.core.functions.Exceptions.ExceptionType;
 import com.zeoldcraft.chlb.CHLB;
 
 import de.diddiz.LogBlock.Consumer;
@@ -31,16 +35,16 @@ public class LBLogging {
 		if (cons != null) {
 			return cons;
 		} else {
-			throw new ConfigRuntimeException("LogBlock is not properly loaded!", ExceptionType.InvalidPluginException, t);
+			throw new CREInvalidPluginException("LogBlock is not properly loaded!", t);
 		}
 	}
 
 	@api
 	public static class lb_log_break extends AbstractFunction {
 
-		public ExceptionType[] thrown() {
-			return new  ExceptionType[]{ExceptionType.InvalidPluginException, ExceptionType.PlayerOfflineException,
-					ExceptionType.CastException, ExceptionType.FormatException};
+		public Class<? extends CREThrowable>[] thrown() {
+			return new Class[]{CREInvalidPluginException.class, CREPlayerOfflineException.class,
+					CRECastException.class, CREFormatException.class};
 		}
 
 		public boolean isRestricted() {
@@ -65,7 +69,7 @@ public class LBLogging {
 				dataBefore = Static.getInt8(args[3], t);
 			}
 			getConsumer(t).queueBlockBreak(p, ((BukkitMCLocation) loc).asLocation(), typeBefore, dataBefore);
-			return new CVoid(t);
+			return CVoid.VOID;
 		}
 
 		public String getName() {
@@ -84,15 +88,15 @@ public class LBLogging {
 		public CHVersion since() {
 			return CHVersion.V3_3_1;
 		}
-		
+
 	}
-	
+
 	@api
 	public static class lb_log_break_sign extends AbstractFunction {
-		
-		public ExceptionType[] thrown() {
-			return new  ExceptionType[]{ExceptionType.InvalidPluginException, ExceptionType.PlayerOfflineException,
-					ExceptionType.CastException, ExceptionType.FormatException, ExceptionType.RangeException};
+
+		public Class<? extends CREThrowable>[] thrown() {
+			return new Class[]{CREInvalidPluginException.class, CREPlayerOfflineException.class,
+					CRECastException.class, CREFormatException.class, CRERangeException.class};
 		}
 
 		public boolean isRestricted() {
@@ -120,23 +124,23 @@ public class LBLogging {
 			if (args.length >= 3) {
 				if (args[2] instanceof CArray) {
 					for (int i=0;i<4;i++) {
-						lines[i] = ((CArray) args[2]).get(i).val();
+						lines[i] = ((CArray) args[2]).get(i, t).val();
 					}
 				} else {
-					throw new Exceptions.FormatException("Expected an array of lines on the sign", t);
+					throw new CREFormatException("Expected an array of lines on the sign", t);
 				}
 			}
 			if (args.length >= 4) {
 				type = Static.getInt32(args[3], t);
 			}
 			if (type != 63 && type != 68) {
-				throw new Exceptions.RangeException("No sign specified.", t);
+				throw new CRERangeException("No sign specified.", t);
 			}
 			if (args.length == 5) {
 				data = Static.getInt8(args[4], t);
 			}
 			getConsumer(t).queueSignBreak(p, ((BukkitMCLocation) loc).asLocation(), type, data, lines);
-			return new CVoid(t);
+			return CVoid.VOID;
 		}
 
 		public String getName() {
@@ -157,13 +161,13 @@ public class LBLogging {
 			return CHVersion.V3_3_1;
 		}
 	}
-	
+
 	@api
 	public static class lb_log_place extends AbstractFunction {
 
-		public ExceptionType[] thrown() {
-			return new  ExceptionType[]{ExceptionType.InvalidPluginException, ExceptionType.PlayerOfflineException,
-					ExceptionType.CastException, ExceptionType.FormatException};
+		public Class<? extends CREThrowable>[] thrown() {
+			return new Class[]{CREInvalidPluginException.class, CREPlayerOfflineException.class,
+					CRECastException.class, CREFormatException.class};
 		}
 
 		public boolean isRestricted() {
@@ -188,7 +192,7 @@ public class LBLogging {
 				data = Static.getInt8(args[3], t);
 			}
 			getConsumer(t).queueBlockPlace(p, ((BukkitMCLocation) loc).asLocation(), type, data);
-			return new CVoid(t);
+			return CVoid.VOID;
 		}
 
 		public String getName() {
@@ -207,15 +211,15 @@ public class LBLogging {
 		public CHVersion since() {
 			return CHVersion.V3_3_1;
 		}
-		
+
 	}
-	
+
 	@api
 	public static class lb_log_place_sign extends AbstractFunction {
-		
-		public ExceptionType[] thrown() {
-			return new  ExceptionType[]{ExceptionType.InvalidPluginException, ExceptionType.PlayerOfflineException,
-					ExceptionType.CastException, ExceptionType.FormatException, ExceptionType.RangeException};
+
+		public Class<? extends CREThrowable>[] thrown() {
+			return new Class[]{CREInvalidPluginException.class, CREPlayerOfflineException.class,
+					CRECastException.class, CREFormatException.class, CRERangeException.class};
 		}
 
 		public boolean isRestricted() {
@@ -243,23 +247,23 @@ public class LBLogging {
 			if (args.length >= 3) {
 				if (args[2] instanceof CArray) {
 					for (int i=0;i<4;i++) {
-						lines[i] = ((CArray) args[2]).get(i).val();
+						lines[i] = ((CArray) args[2]).get(i, t).val();
 					}
 				} else {
-					throw new Exceptions.FormatException("Expected an array of lines on the sign", t);
+					throw new CREFormatException("Expected an array of lines on the sign", t);
 				}
 			}
 			if (args.length >= 4) {
 				type = Static.getInt32(args[3], t);
 			}
 			if (type != 63 && type != 68) {
-				throw new Exceptions.RangeException("No sign specified.", t);
+				throw new CRERangeException("No sign specified.", t);
 			}
 			if (args.length == 5) {
 				data = Static.getInt8(args[4], t);
 			}
 			getConsumer(t).queueSignPlace(p, ((BukkitMCLocation) loc).asLocation(), type, data, lines);
-			return new CVoid(t);
+			return CVoid.VOID;
 		}
 
 		public String getName() {

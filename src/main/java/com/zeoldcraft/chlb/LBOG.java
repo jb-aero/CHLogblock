@@ -6,21 +6,22 @@ import java.util.List;
 import com.laytonsmith.abstraction.MCLocation;
 import com.laytonsmith.abstraction.MCPlayer;
 import com.laytonsmith.abstraction.bukkit.BukkitMCLocation;
-import com.laytonsmith.abstraction.bukkit.BukkitMCPlayer;
 import com.laytonsmith.abstraction.bukkit.BukkitMCWorld;
+import com.laytonsmith.abstraction.bukkit.entities.BukkitMCPlayer;
 import com.laytonsmith.core.ObjectGenerator;
 import com.laytonsmith.core.Static;
 import com.laytonsmith.core.constructs.CArray;
 import com.laytonsmith.core.constructs.Construct;
 import com.laytonsmith.core.constructs.Target;
-import com.laytonsmith.core.exceptions.ConfigRuntimeException;
-import com.laytonsmith.core.functions.Exceptions;
-import com.laytonsmith.core.functions.Exceptions.ExceptionType;
+import com.laytonsmith.core.exceptions.CRE.CREFormatException;
 
+import com.laytonsmith.core.exceptions.CRE.CRENotFoundException;
 import de.diddiz.LogBlock.LogBlock;
 import de.diddiz.LogBlock.QueryParams;
 import de.diddiz.LogBlock.QueryParams.BlockChangeType;
 import de.diddiz.worldedit.RegionContainer;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
 
 public class LBOG {
 
@@ -42,14 +43,13 @@ public class LBOG {
     		if (p.containsKey("info")) {
     			qp.merge(columns(qp, p.get("info", t), t));
     		} else {
-    			throw new Exceptions.FormatException("Array was missing info key", t);
+    			throw new CREFormatException("Array was missing info key", t);
     		}
     		if (p.containsKey("changetype")) {
     			try {
     				qp.bct = BlockChangeType.valueOf(p.get("changetype", t).val());
     			} catch (IllegalArgumentException iae) {
-    				throw new ConfigRuntimeException("Applicable changetypes: " + BlockChangeType.values().toString(),
-    						ExceptionType.FormatException, t);
+    				throw new CREFormatException("Applicable changetypes: " + BlockChangeType.values().toString(), t);
     			}
     		}
     		if (p.containsKey("location")) {
@@ -59,15 +59,24 @@ public class LBOG {
     				qp.radius = Static.getInt32(p.get("radius", t), t);
     			}
     		} else if (p.containsKey("sel")) {
-    			if (p.get("sel", t) instanceof CArray && ((CArray) p.get("sel", t)).size() == 2) {
-    				l1 = ObjectGenerator.GetGenerator().location(((CArray) p.get("sel", t)).get(0, t), null, t);
-    				l2 = ObjectGenerator.GetGenerator().location(((CArray) p.get("sel", t)).get(1, t), null, t);
-    				rc = RegionContainer.fromCorners(((BukkitMCWorld) l1.getWorld()).__World(), 
+    			Construct sel = p.get("sel", t);
+    			if (sel instanceof CArray) {
+    				CArray ca = (CArray) sel;
+    				if(ca.size() < 2) {
+						throw new CREFormatException("Expected 2 location arrays for sel", t);
+					}
+    				l1 = ObjectGenerator.GetGenerator().location(ca.get(0, t), null, t);
+    				l2 = ObjectGenerator.GetGenerator().location(ca.get(1, t), null, t);
+    				rc = RegionContainer.fromCorners(((BukkitMCWorld) l1.getWorld()).__World(),
     						((BukkitMCLocation) l1).asLocation(), ((BukkitMCLocation) l2).asLocation());
     				qp.setSelection(rc);
     			} else {
-    				MCPlayer wep = Static.GetPlayer(p.get("sel", t), t);
-    				rc = RegionContainer.fromPlayerSelection(((BukkitMCPlayer) wep)._Player(), Static.getWorldEditPlugin(t));
+    				MCPlayer player = Static.GetPlayer(p.get("sel", t), t);
+					Plugin wep = Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
+					if(wep == null || !wep.isEnabled()) {
+						throw new CRENotFoundException("WorldEdit cannot be found or is disabled.", t);
+					}
+    				rc = RegionContainer.fromPlayerSelection(((BukkitMCPlayer) player)._Player(), wep);
     				qp.setSelection(rc);
     			}
     		}
@@ -95,7 +104,7 @@ public class LBOG {
     			qp.limit = Static.getInt32(p.get("limit", t), t);
     		}
     	} else {
-    		throw new Exceptions.FormatException("Expected an associative array but received " + c, t);
+    		throw new CREFormatException("Expected an associative array but received " + c, t);
     	}
     	return qp;
     }
@@ -153,7 +162,7 @@ public class LBOG {
 				}
 			}
     	} else {
-    		throw new Exceptions.FormatException("Needed an array to determine which info is requested", t);
+    		throw new CREFormatException("Needed an array to determine which info is requested", t);
     	}
     	return qp;
     }

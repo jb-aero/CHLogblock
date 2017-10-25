@@ -1,28 +1,31 @@
 package com.zeoldcraft.chlb;
 
+import com.laytonsmith.PureUtilities.SimpleVersion;
+import com.laytonsmith.PureUtilities.Version;
+import com.laytonsmith.core.exceptions.CRE.CREInvalidPluginException;
+import com.laytonsmith.core.extensions.AbstractExtension;
+import com.laytonsmith.core.extensions.MSExtension;
 import org.bukkit.plugin.Plugin;
 
-import com.laytonsmith.annotations.startup;
 import com.laytonsmith.commandhelper.CommandHelperPlugin;
 import com.laytonsmith.core.Static;
 import com.laytonsmith.core.constructs.Target;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
-import com.laytonsmith.core.functions.Exceptions.ExceptionType;
 
 import de.diddiz.LogBlock.Consumer;
 import de.diddiz.LogBlock.LogBlock;
 
-public class CHLB {
-	
+@MSExtension("CHLogBlock")
+public class CHLB extends AbstractExtension {
 	private static LogBlock lb;
 	private static Consumer cons;
-	
-	public static String docs() {
-		return "LogBlock functions here.";
+
+	public Version getVersion()  {
+		return new SimpleVersion(0,1,1);
 	}
-	
-	@startup
-	public static void setup() {
+
+	@Override
+	public void onStartup() {
 		CommandHelperPlugin chp = CommandHelperPlugin.self;
 		try {
 			Static.checkPlugin("LogBlock", Target.UNKNOWN);
@@ -31,11 +34,17 @@ public class CHLB {
 				lb = (LogBlock) pl;
 				cons = lb.getConsumer();
 			} else {
-				throw new ConfigRuntimeException("", ExceptionType.InvalidPluginException, Target.UNKNOWN);
+				throw new CREInvalidPluginException("", Target.UNKNOWN);
 			}
+			System.out.println("CHLogBlock " + getVersion() + " loaded.");
 		} catch (ConfigRuntimeException cre) {
 			Static.getLogger().warning("LogBlock not found, CHLogblock cannot function!");
 		}
+	}
+
+	@Override
+	public void onShutdown() {
+		System.out.println("CHLogBlock " + getVersion() + " unloaded.");
 	}
 	
 	public static Consumer getConsumer() {
