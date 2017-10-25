@@ -7,9 +7,13 @@ import com.laytonsmith.core.constructs.CString;
 import com.laytonsmith.core.constructs.Construct;
 import com.laytonsmith.core.constructs.Target;
 import com.laytonsmith.core.environments.Environment;
+import com.laytonsmith.core.exceptions.CRE.CREFormatException;
+import com.laytonsmith.core.exceptions.CRE.CREIOException;
+import com.laytonsmith.core.exceptions.CRE.CREInvalidPluginException;
+import com.laytonsmith.core.exceptions.CRE.CREPlayerOfflineException;
+import com.laytonsmith.core.exceptions.CRE.CREThrowable;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
 import com.laytonsmith.core.functions.AbstractFunction;
-import com.laytonsmith.core.functions.Exceptions.ExceptionType;
 import com.zeoldcraft.chlb.CHLB;
 import com.zeoldcraft.chlb.LBOG;
 
@@ -29,7 +33,7 @@ public class LBQueries {
 		if (cons != null) {
 			return cons;
 		} else {
-			throw new ConfigRuntimeException("LogBlock is not properly loaded!", ExceptionType.InvalidPluginException, t);
+			throw new CREInvalidPluginException("LogBlock is not properly loaded!", t);
 		}
 	}
 	
@@ -38,16 +42,16 @@ public class LBQueries {
 		if (lb != null) {
 			return lb;
 		} else {
-			throw new ConfigRuntimeException("LogBlock is not properly loaded!", ExceptionType.InvalidPluginException, t);
+			throw new  CREInvalidPluginException("LogBlock is not properly loaded!", t);
 		}
 	}
 	
 	@api
 	public static class lb_get_changes extends AbstractFunction {
 
-		public ExceptionType[] thrown() {
-			return new ExceptionType[]{ExceptionType.IOException, ExceptionType.PlayerOfflineException,
-					ExceptionType.FormatException, ExceptionType.InvalidPluginException};
+		public Class<? extends CREThrowable>[] thrown() {
+			return new Class[]{CREIOException.class, CREPlayerOfflineException.class,
+					CREFormatException.class, CREInvalidPluginException.class};
 		}
 
 		public boolean isRestricted() {
@@ -67,10 +71,10 @@ public class LBQueries {
 			try {
 				bcl = lb.getBlockChanges(qp);
 			} catch (java.sql.SQLException e) {
-				throw new ConfigRuntimeException("Could not read database!", ExceptionType.IOException, t);
+				throw new CREIOException("Could not read database!", t);
 			}
 			for (BlockChange bc : bcl) {
-				ret.push(new CString(bc.toString(), t));
+				ret.push(new CString(bc.toString(), t), t);
 			}
 			return ret;
 		}
