@@ -6,8 +6,12 @@
   <description>An extension for CommandHelper providing interactions with LogBlock</description>
 	<repositories>
 		<repository>
-			<id>sk89q-mvn2</id>
-			<url>http://mvn2.sk89q.com/repo</url>
+			<id>sk89q-repo</id>
+			<url>http://maven.sk89q.com/repo/</url>
+		</repository>
+		<repository>
+			<id>md5-repo</id>
+			<url>https://repo.md-5.net/content/repositories/snapshots/</url>
 		</repository>
 	</repositories>
 	<dependencies>
@@ -36,8 +40,8 @@
 				<version>3.3</version>
 				<configuration>
 					<showDeprecation>true</showDeprecation>
-					<source>1.7</source>
-					<target>1.7</target>
+					<source>1.8</source>
+					<target>1.8</target>
 					<compilerArgument>-XDignore.symbol.file</compilerArgument>
 				</configuration>
 			</plugin>
