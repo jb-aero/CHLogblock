@@ -1,8 +1,5 @@
 package com.zeoldcraft.chlb;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.laytonsmith.abstraction.MCLocation;
 import com.laytonsmith.abstraction.MCPlayer;
 import com.laytonsmith.abstraction.bukkit.BukkitMCLocation;
@@ -11,17 +8,16 @@ import com.laytonsmith.abstraction.bukkit.entities.BukkitMCPlayer;
 import com.laytonsmith.core.ObjectGenerator;
 import com.laytonsmith.core.Static;
 import com.laytonsmith.core.constructs.CArray;
-import com.laytonsmith.core.constructs.Construct;
 import com.laytonsmith.core.constructs.Target;
 import com.laytonsmith.core.exceptions.CRE.CREFormatException;
-
-import com.laytonsmith.core.exceptions.CRE.CRENotFoundException;
+import com.laytonsmith.core.natives.interfaces.Mixed;
 import de.diddiz.LogBlock.LogBlock;
 import de.diddiz.LogBlock.QueryParams;
 import de.diddiz.LogBlock.QueryParams.BlockChangeType;
-import de.diddiz.worldedit.RegionContainer;
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
+import de.diddiz.worldedit.CuboidRegion;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class LBOG {
 
@@ -34,12 +30,12 @@ public class LBOG {
         return lbog;
     }
     
-    public QueryParams query(Construct c, LogBlock lb, Target t) {
+    public QueryParams query(Mixed c, LogBlock lb, Target t) {
     	QueryParams qp = new QueryParams(lb);
     	if (c instanceof CArray && ((CArray) c).inAssociativeMode()) {
     		CArray p = (CArray) c;
-    		MCLocation l1, l2;
-    		RegionContainer rc;
+    		MCLocation corner1, corner2;
+    		CuboidRegion worldEditSelection;
     		if (p.containsKey("info")) {
     			qp.merge(columns(qp, p.get("info", t), t));
     		} else {
@@ -53,31 +49,27 @@ public class LBOG {
     			}
     		}
     		if (p.containsKey("location")) {
-    			l1 = ObjectGenerator.GetGenerator().location(p.get("location", t), null, t);
-    			qp.setLocation(((BukkitMCLocation) l1).asLocation());
+    			corner1 = ObjectGenerator.GetGenerator().location(p.get("location", t), null, t);
+    			qp.setLocation(((BukkitMCLocation) corner1).asLocation());
     			if (p.containsKey("radius")) {
     				qp.radius = Static.getInt32(p.get("radius", t), t);
     			}
     		} else if (p.containsKey("sel")) {
-    			Construct sel = p.get("sel", t);
+    			Mixed sel = p.get("sel", t);
     			if (sel instanceof CArray) {
     				CArray ca = (CArray) sel;
     				if(ca.size() < 2) {
 						throw new CREFormatException("Expected 2 location arrays for sel", t);
 					}
-    				l1 = ObjectGenerator.GetGenerator().location(ca.get(0, t), null, t);
-    				l2 = ObjectGenerator.GetGenerator().location(ca.get(1, t), null, t);
-    				rc = RegionContainer.fromCorners(((BukkitMCWorld) l1.getWorld()).__World(),
-    						((BukkitMCLocation) l1).asLocation(), ((BukkitMCLocation) l2).asLocation());
-    				qp.setSelection(rc);
+    				corner1 = ObjectGenerator.GetGenerator().location(ca.get(0, t), null, t);
+    				corner2 = ObjectGenerator.GetGenerator().location(ca.get(1, t), null, t);
+    				worldEditSelection = CuboidRegion.fromCorners(((BukkitMCWorld) corner1.getWorld()).__World(),
+    						((BukkitMCLocation) corner1).asLocation(), ((BukkitMCLocation) corner2).asLocation());
+    				qp.setSelection(worldEditSelection);
     			} else {
     				MCPlayer player = Static.GetPlayer(p.get("sel", t), t);
-					Plugin wep = Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
-					if(wep == null || !wep.isEnabled()) {
-						throw new CRENotFoundException("WorldEdit cannot be found or is disabled.", t);
-					}
-    				rc = RegionContainer.fromPlayerSelection(((BukkitMCPlayer) player)._Player(), wep);
-    				qp.setSelection(rc);
+					worldEditSelection = CuboidRegion.fromPlayerSelection(((BukkitMCPlayer) player)._Player());
+    				qp.setSelection(worldEditSelection);
     			}
     		}
     		if (p.containsKey("players")) {
@@ -109,7 +101,7 @@ public class LBOG {
     	return qp;
     }
     
-    public QueryParams columns(QueryParams qp, Construct col, Target t) {
+    public QueryParams columns(QueryParams qp, Mixed col, Target t) {
 		if (col instanceof CArray && /* ((CArray) col).inAssociativeMode() && */(((CArray) col).size() >= 0)) {
 			CArray ca = (CArray) col;
 			for (int i = 0; i < ca.size(); i++) {
@@ -146,9 +138,6 @@ public class LBOG {
 						break;
 					case PLAYER:
 						qp.needPlayer = true;
-						break;
-					case SIGNTEXT:
-						qp.needSignText = true;
 						break;
 					case TYPE:
 						qp.needType = true;

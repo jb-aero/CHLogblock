@@ -1,10 +1,10 @@
 package com.zeoldcraft.chlb.functions;
 
+import com.laytonsmith.PureUtilities.SimpleVersion;
+import com.laytonsmith.PureUtilities.Version;
 import com.laytonsmith.annotations.api;
-import com.laytonsmith.core.CHVersion;
 import com.laytonsmith.core.constructs.CArray;
 import com.laytonsmith.core.constructs.CString;
-import com.laytonsmith.core.constructs.Construct;
 import com.laytonsmith.core.constructs.Target;
 import com.laytonsmith.core.environments.Environment;
 import com.laytonsmith.core.exceptions.CRE.CREFormatException;
@@ -14,9 +14,9 @@ import com.laytonsmith.core.exceptions.CRE.CREPlayerOfflineException;
 import com.laytonsmith.core.exceptions.CRE.CREThrowable;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
 import com.laytonsmith.core.functions.AbstractFunction;
+import com.laytonsmith.core.natives.interfaces.Mixed;
 import com.zeoldcraft.chlb.CHLB;
 import com.zeoldcraft.chlb.LBOG;
-
 import de.diddiz.LogBlock.BlockChange;
 import de.diddiz.LogBlock.Consumer;
 import de.diddiz.LogBlock.LogBlock;
@@ -62,8 +62,7 @@ public class LBQueries {
 			return false;
 		}
 
-		public Construct exec(Target t, Environment environment,
-				Construct... args) throws ConfigRuntimeException {
+		public Mixed exec(Target t, Environment environment, Mixed... args) throws ConfigRuntimeException {
 			LogBlock lb = getLB(t);
 			QueryParams qp = LBOG.GetGenerator().query(args[0], lb, t);
 			java.util.List<BlockChange> bcl;
@@ -93,9 +92,9 @@ public class LBQueries {
 					+ " strings pre-formatted by LogBlock.";
 		}
 
-		public CHVersion since() {
-			return CHVersion.V3_3_1;
+		@Override
+		public Version since() {
+			return new SimpleVersion(0, 1, 0);
 		}
-		
 	}
 }

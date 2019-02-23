@@ -1,28 +1,31 @@
 package com.zeoldcraft.chlb.functions;
 
+import com.laytonsmith.PureUtilities.SimpleVersion;
+import com.laytonsmith.PureUtilities.Version;
 import com.laytonsmith.abstraction.MCLocation;
-import com.laytonsmith.abstraction.blocks.MCSign;
+import com.laytonsmith.abstraction.blocks.MCBlockData;
 import com.laytonsmith.abstraction.bukkit.BukkitMCLocation;
 import com.laytonsmith.annotations.api;
-import com.laytonsmith.core.CHVersion;
 import com.laytonsmith.core.ObjectGenerator;
 import com.laytonsmith.core.Static;
 import com.laytonsmith.core.constructs.CArray;
 import com.laytonsmith.core.constructs.CVoid;
-import com.laytonsmith.core.constructs.Construct;
 import com.laytonsmith.core.constructs.Target;
 import com.laytonsmith.core.environments.Environment;
-import com.laytonsmith.core.exceptions.CRE.CRECastException;
 import com.laytonsmith.core.exceptions.CRE.CREFormatException;
+import com.laytonsmith.core.exceptions.CRE.CREIllegalArgumentException;
 import com.laytonsmith.core.exceptions.CRE.CREInvalidPluginException;
 import com.laytonsmith.core.exceptions.CRE.CREPlayerOfflineException;
-import com.laytonsmith.core.exceptions.CRE.CRERangeException;
 import com.laytonsmith.core.exceptions.CRE.CREThrowable;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
 import com.laytonsmith.core.functions.AbstractFunction;
+import com.laytonsmith.core.natives.interfaces.Mixed;
 import com.zeoldcraft.chlb.CHLB;
-
+import de.diddiz.LogBlock.Actor;
 import de.diddiz.LogBlock.Consumer;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Sign;
+import org.bukkit.block.data.BlockData;
 
 public class LBLogging {
 	
@@ -43,8 +46,7 @@ public class LBLogging {
 	public static class lb_log_break extends AbstractFunction {
 
 		public Class<? extends CREThrowable>[] thrown() {
-			return new Class[]{CREInvalidPluginException.class, CREPlayerOfflineException.class,
-					CRECastException.class, CREFormatException.class};
+			return new Class[]{CREInvalidPluginException.class, CREPlayerOfflineException.class, CREFormatException.class};
 		}
 
 		public boolean isRestricted() {
@@ -55,20 +57,22 @@ public class LBLogging {
 			return false;
 		}
 
-		public Construct exec(Target t, Environment environment,
-				Construct... args) throws ConfigRuntimeException {
+		public Mixed exec(Target t, Environment environment, Mixed... args) throws ConfigRuntimeException {
 			Static.checkPlugin("LogBlock", t);
-			String p = args[0].val();
+			Actor actor = new Actor(args[0].val());
 			MCLocation loc = ObjectGenerator.GetGenerator().location(args[1], null, t);
-			int typeBefore = loc.getBlock().getTypeId();
-			byte dataBefore = loc.getBlock().getData();
-			if (args.length >= 3) {
-				typeBefore = Static.getInt32(args[2], t);
+			if (args.length == 3) {
+				MCBlockData bd;
+				try {
+					bd = Static.getServer().createBlockData(args[1].val());
+				} catch (IllegalArgumentException iae) {
+					throw new CREIllegalArgumentException("Cannot create block data from string: " + args[1].val(), t);
+				}
+				getConsumer(t).queueBlockBreak(actor, ((BukkitMCLocation) loc).asLocation(), (BlockData) bd.getHandle());
+			} else {
+				getConsumer(t).queueBlockBreak(actor, ((BukkitMCLocation) loc).asLocation(),
+						(BlockData) loc.getBlock().getBlockData().getHandle());
 			}
-			if (args.length == 4) {
-				dataBefore = Static.getInt8(args[3], t);
-			}
-			getConsumer(t).queueBlockBreak(p, ((BukkitMCLocation) loc).asLocation(), typeBefore, dataBefore);
 			return CVoid.VOID;
 		}
 
@@ -77,26 +81,25 @@ public class LBLogging {
 		}
 
 		public Integer[] numArgs() {
-			return new  Integer[]{2, 3, 4};
+			return new  Integer[]{2, 3};
 		}
 
 		public String docs() {
-			return "void {player, locationArray, [typeBreaking], [dataBreaking]} Manually logs a block breaking"
-					+ " at a location. You can choose to specify the type and data of the block being broken.";
+			return "void {player, locationArray, [blockDataString]} Manually logs a block breaking at a location."
+					+ " You can choose to specify the BlockData of the block being broken.";
 		}
 
-		public CHVersion since() {
-			return CHVersion.V3_3_1;
+		@Override
+		public Version since() {
+			return new SimpleVersion(0, 1, 0);
 		}
-
 	}
 
 	@api
 	public static class lb_log_break_sign extends AbstractFunction {
 
 		public Class<? extends CREThrowable>[] thrown() {
-			return new Class[]{CREInvalidPluginException.class, CREPlayerOfflineException.class,
-					CRECastException.class, CREFormatException.class, CRERangeException.class};
+			return new Class[]{CREInvalidPluginException.class, CREIllegalArgumentException.class, CREFormatException.class};
 		}
 
 		public boolean isRestricted() {
@@ -107,39 +110,29 @@ public class LBLogging {
 			return false;
 		}
 
-		public Construct exec(Target t, Environment environment,
-				Construct... args) throws ConfigRuntimeException {
+		public Mixed exec(Target t, Environment environment, Mixed... args) throws ConfigRuntimeException {
 			Static.checkPlugin("LogBlock", t);
 			String p = args[0].val();
 			MCLocation loc = ObjectGenerator.GetGenerator().location(args[1], null, t);
-			int type = loc.getBlock().getTypeId();
-			byte data = loc.getBlock().getData();
-			String[] lines = new String[]{"", "", "", ""};
-			if (loc.getBlock().isSign()) {
-				MCSign s =  loc.getBlock().getSign();
-				for (int i=0; i<4; i++) {
-					lines[i] = s.getLine(i);
-				}
-			}
-			if (args.length >= 3) {
-				if (args[2] instanceof CArray) {
-					for (int i=0;i<4;i++) {
-						lines[i] = ((CArray) args[2]).get(i, t).val();
+			BlockState blockState = ((BukkitMCLocation) loc).asLocation().getBlock().getState();
+			if (blockState instanceof Sign) {
+				Sign sign = (Sign) blockState;
+				if (args.length >= 3) {
+					if (args[2] instanceof CArray) {
+						CArray lines = ((CArray) args[2]);
+						for (int i = 0; i < 4; i++) {
+							if (lines.containsKey(i)) {
+								sign.setLine(i, lines.get(i, t).val());
+							}
+						}
+					} else {
+						throw new CREFormatException("Expected an array of lines on the sign", t);
 					}
-				} else {
-					throw new CREFormatException("Expected an array of lines on the sign", t);
 				}
+				getConsumer(t).queueSignBreak(new Actor(p), sign);
+			} else {
+				throw new CREIllegalArgumentException("The location specified is not a sign.", t);
 			}
-			if (args.length >= 4) {
-				type = Static.getInt32(args[3], t);
-			}
-			if (type != 63 && type != 68) {
-				throw new CRERangeException("No sign specified.", t);
-			}
-			if (args.length == 5) {
-				data = Static.getInt8(args[4], t);
-			}
-			getConsumer(t).queueSignBreak(p, ((BukkitMCLocation) loc).asLocation(), type, data, lines);
 			return CVoid.VOID;
 		}
 
@@ -148,17 +141,19 @@ public class LBLogging {
 		}
 
 		public Integer[] numArgs() {
-			return new  Integer[]{2, 3, 4, 5};
+			return new  Integer[]{2, 3};
 		}
 
 		public String docs() {
-			return "void {player, locationArray, [array], [typePlacing], [dataPlacing]} Manually logs a sign being broken"
-					+ " at a location. The third param is an array of the lines of the sign, defaulting to 4 blank strings."
-					+ " The 4th and 5th determine the type and rotation of the sign.";
+			return "void {playerName, locationArray, [array]} Manually logs a sign being broken at a location."
+					+ " The third param is an array of lines on the sign, defaulting to current lines."
+					+ " Note 1: An error will be thrown if the specified location is not a sign."
+					+ " Note 2: Specifying lines will update the physical sign as well.";
 		}
 
-		public CHVersion since() {
-			return CHVersion.V3_3_1;
+		@Override
+		public Version since() {
+			return new SimpleVersion(0, 1, 0);
 		}
 	}
 
@@ -166,8 +161,7 @@ public class LBLogging {
 	public static class lb_log_place extends AbstractFunction {
 
 		public Class<? extends CREThrowable>[] thrown() {
-			return new Class[]{CREInvalidPluginException.class, CREPlayerOfflineException.class,
-					CRECastException.class, CREFormatException.class};
+			return new Class[]{CREInvalidPluginException.class, CREIllegalArgumentException.class, CREFormatException.class};
 		}
 
 		public boolean isRestricted() {
@@ -178,20 +172,22 @@ public class LBLogging {
 			return false;
 		}
 
-		public Construct exec(Target t, Environment environment,
-				Construct... args) throws ConfigRuntimeException {
+		public Mixed exec(Target t, Environment environment, Mixed... args) throws ConfigRuntimeException {
 			Static.checkPlugin("LogBlock", t);
 			String p = args[0].val();
 			MCLocation loc = ObjectGenerator.GetGenerator().location(args[1], null, t);
-			int type = loc.getBlock().getTypeId();
-			byte data = loc.getBlock().getData();
-			if (args.length >= 3) {
-				type = Static.getInt32(args[2], t);
+			if (args.length == 3) {
+				MCBlockData bd;
+				try {
+					bd = Static.getServer().createBlockData(args[1].val());
+				} catch (IllegalArgumentException iae) {
+					throw new CREIllegalArgumentException("Cannot create block data from string: " + args[1].val(), t);
+				}
+				getConsumer(t).queueBlockPlace(new Actor(p), ((BukkitMCLocation) loc).asLocation(), (BlockData) bd.getHandle());
+			} else {
+				getConsumer(t).queueBlockPlace(new Actor(p), ((BukkitMCLocation) loc).asLocation(),
+						(BlockData) loc.getBlock().getBlockData().getHandle());
 			}
-			if (args.length == 4) {
-				data = Static.getInt8(args[3], t);
-			}
-			getConsumer(t).queueBlockPlace(p, ((BukkitMCLocation) loc).asLocation(), type, data);
 			return CVoid.VOID;
 		}
 
@@ -200,26 +196,25 @@ public class LBLogging {
 		}
 
 		public Integer[] numArgs() {
-			return new  Integer[]{2, 3, 4};
+			return new  Integer[]{2, 3};
 		}
 
 		public String docs() {
-			return "void {player, locationArray, [typePlacing], [dataPlacing]} Manually logs a block being placed"
-					+ " at a location. You can choose to specify the type and data of the block being placed.";
+			return "void {player, locationArray, [blockDataString]} Manually logs a block being placed at a location."
+					+ " You can choose to specify the BlockData of the block being placed.";
 		}
 
-		public CHVersion since() {
-			return CHVersion.V3_3_1;
+		@Override
+		public Version since() {
+			return new SimpleVersion(0, 1, 0);
 		}
-
 	}
 
 	@api
 	public static class lb_log_place_sign extends AbstractFunction {
 
 		public Class<? extends CREThrowable>[] thrown() {
-			return new Class[]{CREInvalidPluginException.class, CREPlayerOfflineException.class,
-					CRECastException.class, CREFormatException.class, CRERangeException.class};
+			return new Class[]{CREInvalidPluginException.class, CREIllegalArgumentException.class, CREFormatException.class};
 		}
 
 		public boolean isRestricted() {
@@ -230,39 +225,29 @@ public class LBLogging {
 			return false;
 		}
 
-		public Construct exec(Target t, Environment environment,
-				Construct... args) throws ConfigRuntimeException {
+		public Mixed exec(Target t, Environment environment, Mixed... args) throws ConfigRuntimeException {
 			Static.checkPlugin("LogBlock", t);
 			String p = args[0].val();
 			MCLocation loc = ObjectGenerator.GetGenerator().location(args[1], null, t);
-			int type = loc.getBlock().getTypeId();
-			byte data = loc.getBlock().getData();
-			String[] lines = new String[]{"", "", "", ""};
-			if (loc.getBlock().isSign()) {
-				MCSign s =  loc.getBlock().getSign();
-				for (int i=0; i<4; i++) {
-					lines[i] = s.getLine(i);
-				}
-			}
-			if (args.length >= 3) {
-				if (args[2] instanceof CArray) {
-					for (int i=0;i<4;i++) {
-						lines[i] = ((CArray) args[2]).get(i, t).val();
+			BlockState blockState = ((BukkitMCLocation) loc).asLocation().getBlock().getState();
+			if (blockState instanceof Sign) {
+				Sign sign = (Sign) blockState;
+				if (args.length >= 3) {
+					if (args[2] instanceof CArray) {
+						CArray lines = ((CArray) args[2]);
+						for (int i = 0; i < 4; i++) {
+							if (lines.containsKey(i)) {
+								sign.setLine(i, lines.get(i, t).val());
+							}
+						}
+					} else {
+						throw new CREFormatException("Expected an array of lines on the sign", t);
 					}
-				} else {
-					throw new CREFormatException("Expected an array of lines on the sign", t);
 				}
+				getConsumer(t).queueSignPlace(new Actor(p), sign);
+			} else {
+				throw new CREIllegalArgumentException("The location specified is not a sign.", t);
 			}
-			if (args.length >= 4) {
-				type = Static.getInt32(args[3], t);
-			}
-			if (type != 63 && type != 68) {
-				throw new CRERangeException("No sign specified.", t);
-			}
-			if (args.length == 5) {
-				data = Static.getInt8(args[4], t);
-			}
-			getConsumer(t).queueSignPlace(p, ((BukkitMCLocation) loc).asLocation(), type, data, lines);
 			return CVoid.VOID;
 		}
 
@@ -271,17 +256,19 @@ public class LBLogging {
 		}
 
 		public Integer[] numArgs() {
-			return new  Integer[]{2, 3, 4, 5};
+			return new  Integer[]{2, 3};
 		}
 
 		public String docs() {
-			return "void {player, locationArray, [array], [typePlacing], [dataPlacing]} Manually logs a sign being placed"
-					+ " at a location. The third param is an array of lines on the sign, defaulting to 4 blank strings."
-					+ " The fourth and fifth determine the placement of the sign.";
+			return "void {playerName, locationArray, [array]} Manually logs a sign being placed at a location."
+					+ " The third param is an array of lines on the sign, defaulting to current lines."
+					+ " Note 1: An error will be thrown if the specified location is not a sign."
+					+ " Note 2: Specifying lines will update the physical sign as well.";
 		}
 
-		public CHVersion since() {
-			return CHVersion.V3_3_1;
+		@Override
+		public Version since() {
+			return new SimpleVersion(0, 1, 0);
 		}
 	}
 }
