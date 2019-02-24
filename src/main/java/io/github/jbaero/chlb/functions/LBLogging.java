@@ -1,4 +1,4 @@
-package com.zeoldcraft.chlb.functions;
+package io.github.jbaero.chlb.functions;
 
 import com.laytonsmith.PureUtilities.SimpleVersion;
 import com.laytonsmith.PureUtilities.Version;
@@ -20,9 +20,9 @@ import com.laytonsmith.core.exceptions.CRE.CREThrowable;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
 import com.laytonsmith.core.functions.AbstractFunction;
 import com.laytonsmith.core.natives.interfaces.Mixed;
-import com.zeoldcraft.chlb.CHLB;
 import de.diddiz.LogBlock.Actor;
 import de.diddiz.LogBlock.Consumer;
+import io.github.jbaero.chlb.CHLB;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;

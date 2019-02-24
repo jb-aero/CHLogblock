@@ -1,4 +1,4 @@
-package com.zeoldcraft.chlb;
+package io.github.jbaero.chlb;
 
 import com.laytonsmith.abstraction.MCLocation;
 import com.laytonsmith.abstraction.MCPlayer;

@@ -1,4 +1,4 @@
-package com.zeoldcraft.chlb;
+package io.github.jbaero.chlb;
 
 public enum LBColumns {
 	CHESTACCESS,

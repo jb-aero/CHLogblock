@@ -1,4 +1,4 @@
-package com.zeoldcraft.chlb.functions;
+package io.github.jbaero.chlb.functions;
 
 import com.laytonsmith.PureUtilities.Common.StringUtils;
 import com.laytonsmith.PureUtilities.SimpleVersion;
@@ -16,13 +16,13 @@ import com.laytonsmith.core.exceptions.CRE.CREThrowable;
 import com.laytonsmith.core.exceptions.ConfigRuntimeException;
 import com.laytonsmith.core.functions.AbstractFunction;
 import com.laytonsmith.core.natives.interfaces.Mixed;
-import com.zeoldcraft.chlb.CHLB;
-import com.zeoldcraft.chlb.LBColumns;
-import com.zeoldcraft.chlb.LBOG;
 import de.diddiz.LogBlock.BlockChange;
 import de.diddiz.LogBlock.Consumer;
 import de.diddiz.LogBlock.LogBlock;
 import de.diddiz.LogBlock.QueryParams;
+import io.github.jbaero.chlb.CHLB;
+import io.github.jbaero.chlb.LBColumns;
+import io.github.jbaero.chlb.LBOG;
 
 public class LBQueries {
 

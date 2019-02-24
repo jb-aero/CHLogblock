@@ -1,4 +1,4 @@
-package com.zeoldcraft.chlb;
+package io.github.jbaero.chlb;
 
 import com.laytonsmith.PureUtilities.SimpleVersion;
 import com.laytonsmith.PureUtilities.Version;
