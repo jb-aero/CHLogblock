@@ -1,5 +1,6 @@
 package com.zeoldcraft.chlb.functions;
 
+import com.laytonsmith.PureUtilities.Common.StringUtils;
 import com.laytonsmith.PureUtilities.SimpleVersion;
 import com.laytonsmith.PureUtilities.Version;
 import com.laytonsmith.annotations.api;
@@ -16,6 +17,7 @@ import com.laytonsmith.core.exceptions.ConfigRuntimeException;
 import com.laytonsmith.core.functions.AbstractFunction;
 import com.laytonsmith.core.natives.interfaces.Mixed;
 import com.zeoldcraft.chlb.CHLB;
+import com.zeoldcraft.chlb.LBColumns;
 import com.zeoldcraft.chlb.LBOG;
 import de.diddiz.LogBlock.BlockChange;
 import de.diddiz.LogBlock.Consumer;
@@ -89,7 +91,13 @@ public class LBQueries {
 		public String docs() {
 			return "array {array} Takes an associative array of parameters to query the database with,"
 					+ " and returns an array of the matching changes. Block changes are in the form of"
-					+ " strings pre-formatted by LogBlock.";
+					+ " strings pre-formatted by LogBlock. The 'info' parameter allows you to specify columns"
+					+ " to include data from. Columns available are "
+					+ StringUtils.Join(LBColumns.values(), ", ", ", and ") + "."
+					+ " The 'changetype' parameter can be "
+					+ StringUtils.Join(QueryParams.BlockChangeType.values(), ", ", ", or ") + "."
+					+ " The other available parameters are 'location' (with optional 'radius'), 'players', 'world',"
+					+ " 'since', 'before', and 'limit'.";
 		}
 
 		@Override

@@ -31,31 +31,31 @@ public class LBOG {
     }
     
     public QueryParams query(Mixed c, LogBlock lb, Target t) {
-    	QueryParams qp = new QueryParams(lb);
+    	QueryParams queryParams = new QueryParams(lb);
     	if (c instanceof CArray && ((CArray) c).inAssociativeMode()) {
-    		CArray p = (CArray) c;
+    		CArray argParams = (CArray) c;
     		MCLocation corner1, corner2;
     		CuboidRegion worldEditSelection;
-    		if (p.containsKey("info")) {
-    			qp.merge(columns(qp, p.get("info", t), t));
+    		if (argParams.containsKey("info")) {
+    			queryParams.merge(columns(queryParams, argParams.get("info", t), t));
     		} else {
     			throw new CREFormatException("Array was missing info key", t);
     		}
-    		if (p.containsKey("changetype")) {
+    		if (argParams.containsKey("changetype")) {
     			try {
-    				qp.bct = BlockChangeType.valueOf(p.get("changetype", t).val());
+    				queryParams.bct = BlockChangeType.valueOf(argParams.get("changetype", t).val());
     			} catch (IllegalArgumentException iae) {
     				throw new CREFormatException("Applicable changetypes: " + BlockChangeType.values().toString(), t);
     			}
     		}
-    		if (p.containsKey("location")) {
-    			corner1 = ObjectGenerator.GetGenerator().location(p.get("location", t), null, t);
-    			qp.setLocation(((BukkitMCLocation) corner1).asLocation());
-    			if (p.containsKey("radius")) {
-    				qp.radius = Static.getInt32(p.get("radius", t), t);
+    		if (argParams.containsKey("location")) {
+    			corner1 = ObjectGenerator.GetGenerator().location(argParams.get("location", t), null, t);
+    			queryParams.setLocation(((BukkitMCLocation) corner1).asLocation());
+    			if (argParams.containsKey("radius")) {
+    				queryParams.radius = Static.getInt32(argParams.get("radius", t), t);
     			}
-    		} else if (p.containsKey("sel")) {
-    			Mixed sel = p.get("sel", t);
+    		} else if (argParams.containsKey("sel")) {
+    			Mixed sel = argParams.get("sel", t);
     			if (sel instanceof CArray) {
     				CArray ca = (CArray) sel;
     				if(ca.size() < 2) {
@@ -65,94 +65,94 @@ public class LBOG {
     				corner2 = ObjectGenerator.GetGenerator().location(ca.get(1, t), null, t);
     				worldEditSelection = CuboidRegion.fromCorners(((BukkitMCWorld) corner1.getWorld()).__World(),
     						((BukkitMCLocation) corner1).asLocation(), ((BukkitMCLocation) corner2).asLocation());
-    				qp.setSelection(worldEditSelection);
+    				queryParams.setSelection(worldEditSelection);
     			} else {
-    				MCPlayer player = Static.GetPlayer(p.get("sel", t), t);
+    				MCPlayer player = Static.GetPlayer(argParams.get("sel", t), t);
 					worldEditSelection = CuboidRegion.fromPlayerSelection(((BukkitMCPlayer) player)._Player());
-    				qp.setSelection(worldEditSelection);
+    				queryParams.setSelection(worldEditSelection);
     			}
     		}
-    		if (p.containsKey("players")) {
+    		if (argParams.containsKey("players")) {
     			List<String> plist = new ArrayList<String>();
-    			if (p.get("players", t) instanceof CArray) {
-    				for (int i=0; i < ((CArray) p.get("players", t)).size(); i++) {
-    					plist.add(((CArray) p.get("players", t)).get(i, t).val());
+    			if (argParams.get("players", t) instanceof CArray) {
+    				for (int i=0; i < ((CArray) argParams.get("players", t)).size(); i++) {
+    					plist.add(((CArray) argParams.get("players", t)).get(i, t).val());
     				}
     			} else {
-    				plist.add(p.get("players", t).val());
+    				plist.add(argParams.get("players", t).val());
     			}
-    			qp.players = plist;
+    			queryParams.players = plist;
     		}
-    		if (p.containsKey("world")) {
-    			qp.world = ((BukkitMCWorld) Static.getServer().getWorld(p.get("world", t).val())).__World();
+    		if (argParams.containsKey("world")) {
+    			queryParams.world = ((BukkitMCWorld) Static.getServer().getWorld(argParams.get("world", t).val())).__World();
     		}
-    		if (p.containsKey("since")) {
-    			qp.since = Static.getInt32(p.get("since", t), t);
+    		if (argParams.containsKey("since")) {
+    			queryParams.since = Static.getInt32(argParams.get("since", t), t);
     		}
-    		if (p.containsKey("before")) {
-    			qp.before = Static.getInt32(p.get("before", t), t);
+    		if (argParams.containsKey("before")) {
+    			queryParams.before = Static.getInt32(argParams.get("before", t), t);
     		}
-    		if (p.containsKey("limit")) {
-    			qp.limit = Static.getInt32(p.get("limit", t), t);
+    		if (argParams.containsKey("limit")) {
+    			queryParams.limit = Static.getInt32(argParams.get("limit", t), t);
     		}
     	} else {
     		throw new CREFormatException("Expected an associative array but received " + c, t);
     	}
-    	return qp;
+    	return queryParams;
     }
     
-    public QueryParams columns(QueryParams qp, Mixed col, Target t) {
+    public QueryParams columns(QueryParams queryParams, Mixed col, Target t) {
 		if (col instanceof CArray && /* ((CArray) col).inAssociativeMode() && */(((CArray) col).size() >= 0)) {
-			CArray ca = (CArray) col;
-			for (int i = 0; i < ca.size(); i++) {
+			CArray columnsArray = (CArray) col;
+			for (int i = 0; i < columnsArray.size(); i++) {
 				LBColumns lbc;
 				try {
-					lbc = LBColumns.valueOf(ca.get(i, t).val().toUpperCase());
+					lbc = LBColumns.valueOf(columnsArray.get(i, t).val().toUpperCase());
 				} catch (IllegalArgumentException ex) {
 					continue;
 				}
 				switch (lbc) {
 					case CHESTACCESS:
-						qp.needChestAccess = true;
+						queryParams.needChestAccess = true;
 						break;
 					case COORDS:
-						qp.needCoords = true;
+						queryParams.needCoords = true;
 						break;
 					case COUNT:
-						qp.needCount = true;
+						queryParams.needCount = true;
 						break;
 					case DATA:
-						qp.needData = true;
+						queryParams.needData = true;
 						break;
 					case DATE:
-						qp.needDate = true;
+						queryParams.needDate = true;
 						break;
 					case ID:
-						qp.needId = true;
+						queryParams.needId = true;
 						break;
 					case KILLER:
-						qp.needKiller = true;
+						queryParams.needKiller = true;
 						break;
 					case MESSAGE:
-						qp.needMessage = true;
+						queryParams.needMessage = true;
 						break;
 					case PLAYER:
-						qp.needPlayer = true;
+						queryParams.needPlayer = true;
 						break;
 					case TYPE:
-						qp.needType = true;
+						queryParams.needType = true;
 						break;
 					case VICTIM:
-						qp.needVictim = true;
+						queryParams.needVictim = true;
 						break;
 					case WEAPON:
-						qp.needWeapon = true;
+						queryParams.needWeapon = true;
 						break;
 				}
 			}
     	} else {
     		throw new CREFormatException("Needed an array to determine which info is requested", t);
     	}
-    	return qp;
+    	return queryParams;
     }
 }
