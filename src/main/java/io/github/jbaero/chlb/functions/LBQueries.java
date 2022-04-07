@@ -94,8 +94,8 @@ public class LBQueries {
 					+ " strings pre-formatted by LogBlock. The 'info' parameter allows you to specify columns"
 					+ " to include data from. Columns available are "
 					+ StringUtils.Join(LBColumns.values(), ", ", ", and ") + "."
-					+ " The 'changetype' parameter can be "
-					+ StringUtils.Join(QueryParams.BlockChangeType.values(), ", ", ", or ") + "."
+					+ " The 'changetype' parameter can be ALL, BOTH, CHESTACCESS, CREATED, DESTROYED, CHAT, KILLS,"
+					+ " ENTITIES, ENTITIES_CREATED, or ENTITIES_KILLED."
 					+ " The other available parameters are 'location' (with optional 'radius'), 'players', 'world',"
 					+ " 'since', 'before', and 'limit'.";
 		}
