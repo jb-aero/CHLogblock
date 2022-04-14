@@ -5,6 +5,7 @@ import com.laytonsmith.abstraction.MCPlayer;
 import com.laytonsmith.abstraction.bukkit.BukkitMCLocation;
 import com.laytonsmith.abstraction.bukkit.BukkitMCWorld;
 import com.laytonsmith.abstraction.bukkit.entities.BukkitMCPlayer;
+import com.laytonsmith.core.ArgumentValidation;
 import com.laytonsmith.core.ObjectGenerator;
 import com.laytonsmith.core.Static;
 import com.laytonsmith.core.constructs.CArray;
@@ -52,7 +53,7 @@ public class LBOG {
     			corner1 = ObjectGenerator.GetGenerator().location(argParams.get("location", t), null, t);
     			queryParams.setLocation(((BukkitMCLocation) corner1).asLocation());
     			if (argParams.containsKey("radius")) {
-    				queryParams.radius = Static.getInt32(argParams.get("radius", t), t);
+    				queryParams.radius = ArgumentValidation.getInt32(argParams.get("radius", t), t);
     			}
     		} else if (argParams.containsKey("sel")) {
     			Mixed sel = argParams.get("sel", t);
@@ -87,13 +88,13 @@ public class LBOG {
     			queryParams.world = ((BukkitMCWorld) Static.getServer().getWorld(argParams.get("world", t).val())).__World();
     		}
     		if (argParams.containsKey("since")) {
-    			queryParams.since = Static.getInt32(argParams.get("since", t), t);
+    			queryParams.since = ArgumentValidation.getInt32(argParams.get("since", t), t);
     		}
     		if (argParams.containsKey("before")) {
-    			queryParams.before = Static.getInt32(argParams.get("before", t), t);
+    			queryParams.before = ArgumentValidation.getInt32(argParams.get("before", t), t);
     		}
     		if (argParams.containsKey("limit")) {
-    			queryParams.limit = Static.getInt32(argParams.get("limit", t), t);
+    			queryParams.limit = ArgumentValidation.getInt32(argParams.get("limit", t), t);
     		}
     	} else {
     		throw new CREFormatException("Expected an associative array but received " + c, t);
